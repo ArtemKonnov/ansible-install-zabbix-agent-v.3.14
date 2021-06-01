@@ -1,0 +1,7 @@
+---
+- name: Установка Zabbix-agent 3.4 на сервера
+  hosts: ag
+  roles:
+   - { role: zabbix-agent-debian, when: ansible_distribution  == 'Debian' }
+   - { role: zabbix-agent-ubuntu, when: ansible_distribution  == 'Ubuntu' }
+  become: true

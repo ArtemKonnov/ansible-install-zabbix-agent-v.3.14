@@ -1,0 +1,4 @@
+---
+zabbix_server: 172.31.1.2
+http_proxy: http://172.28.1.1:3128
+https_proxy: https://172.28.1.1:3128

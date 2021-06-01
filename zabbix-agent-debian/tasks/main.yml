@@ -1,0 +1,45 @@
+---
+- name: Установка python3
+  apt:
+    name: python3
+    state: present
+
+- name: Актуализация python
+  shell: alias python='/bin/python3'
+
+- name: Создание временной директориии
+  file: state=directory path=~/temp
+
+- name: Скачивание пакетов (libcurl3, libssl, zabbix-release_3.4)
+  shell: wget {{ item }} -P ~/temp -e use_proxy=yes -e http_proxy={{ http_proxy }} -e https_proxy={{ https_proxy }}
+  loop:
+  - http://ftp.br.debian.org/debian/pool/main/c/curl/libcurl3_7.52.1-5+deb9u10_amd64.deb
+  - http://ftp.br.debian.org/debian/pool/main/o/openssl1.0/libssl1.0.2_1.0.2u-1~deb9u1_amd64.deb
+  - http://repo.zabbix.com/zabbix/3.4/debian/pool/main/z/zabbix/zabbix-agent_3.4.15-1+stretch_amd64.deb 
+
+- name: Удаление libcurl4
+  apt: 
+    name: libcurl4
+    state: absent
+    purge: yes
+
+- name: Установка пакетов (libssl, zabbix-agent_3.4)
+  shell: dpkg -i {{ item }}
+  loop:
+  - ~/temp/libssl1.0.2_1.0.2u-1~deb9u1_amd64.deb
+  - ~/temp/libcurl3_7.52.1-5+deb9u10_amd64.deb
+  - ~/temp/zabbix-agent_3.4.15-1+stretch_amd64.deb
+
+- name: Удаление temp
+  shell: rm -rf ~/temp
+  
+- name: Настройка zabbix-release_3.4
+  template:
+    src: zabbix-agentd.conf.j2
+    dest: /etc/zabbix/zabbix_agentd.conf
+
+- name: Перезагрузка zabbix-release_3.4 с новой конфигурацией
+  ansible.builtin.service:
+    name: zabbix-agent
+    state: restarted
+    enabled: yes
